@@ -6,7 +6,6 @@
     <router-link to="/createpost">CREATE POST</router-link>
     <router-link to="/editpost">EDIT POST</router-link>
     <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
-    <button @click="deleteUser( form.userId )">delete user</button>
 </div>
 
  <div class="background-top">
@@ -14,25 +13,26 @@
   </div>
 
 <div class="posts">
-    <h2>News Feed</h2> 
-<div class="message" v-for="post in posts">
+    <h2>News Feed</h2>
+<div class="message">
     <div class="message-header"></div>
       <div class="message-author-picture"></div>
-      <div class="message-author">{{ user.firstName + user.lastName }}</div>
+      <div class="message-author">{{ post.firstName + post.lastName }}</div>
       <div class="message-time">3 minutes ago</div>
       <div class="message-title"><b>{{ post.title }}</b></div>
        <p>{{ post.description }}</p>
        <div class="message-image"><img :src="post.imageUrl"></div>
        <hr>
       <div class="feedback">
-        <button class="like" @click="userLike( post._id, post.likes )">Like [{{ post.likes }}]</button>
-        <button class="dislike" @click="userDislike( post._id )">Dislike [{{ post.dislikes }}]</button>
-        <button class="read" @click="readRedirect( post._id )">Read</button>
-        
-        
+        <button class="like" @click="likePost( post._id )">Like</button>
+        <button class="comment">Comment</button>
+        <button class="edit">Edit</button>
+        <button @click="deletePost( post._id )" class="delete">Delete</button>
       </div>
     </div>
-    
+    <input type="comment" v-model="comment.comment" placeholder="Write a comment" name="comment" id="comment">
+        <button class="comment" @click="makeComment( post._id )">Send</button>
+      <p class="commentStyle" v-for="comment in comments" :key="comment._id"> {{ comment.comment }} by {{ comment.user.lastName }}</p>
 </div>
 </template>
 
@@ -40,63 +40,30 @@
 import axios from 'axios'
 
 export default {
-  name: 'Home',
+  name: 'SinglePost',
   data() {
     return { 
-      posts: [],
-      user: {},
+      post: {},
       form: {
         like: 0,
         userId: localStorage.getItem('userId')
       },
       comment: {
         comment: '',
-        user: this.user,
+        user: JSON.parse(localStorage.getItem('user')),
         postId: ''
-      }
+      },
+      comments: {}
     }
   },
   methods: {
-    userLike: function(id, like) {
-      if (like == null || like == 0) {
-          this.form.like = 1
-          } else {
-              this.form.like = 0
-          }
-      axios.post('http://localhost:3000/api/posts/' + id + '/like', this.form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
-      .then((response) => {
-        console.log(response)
-        this.loadPosts();
-      }) 
-    },
-
-    userDislike: function(id) {
-      axios.post('http://localhost:3000/api/posts/' + id + '/dislike', { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
-      .then((response) => {
-        console.log(response)
-      }) 
-    },
-
-    retrieveUser: function(id) {
-      axios.get('http://localhost:3000/api/user/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
-      .then((response) => {
-        console.log(response)
-        this.user = response.data
-        console.log(this.user)
-      }) 
-    },
-
-    deleteUser: function(id) {
-      axios.delete('http://localhost:3000/api/user/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
-      .then((response) => {
-        console.log(response)
-        this.user = response.data
-        console.log(this.user)
-      }) 
-    },
-
     readRedirect: function(id) {
-      window.location.href = '/singlepost/' + id
+      axios.get('http://localhost:3000/api/posts/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      .then((response) => {
+        //console.log(response)
+        this.posts = response.data
+        console.log(this.posts)
+      })
     },
 
     submitLogout: function() {
@@ -104,14 +71,21 @@ export default {
       this.$router.push('http://localhost:3000/api/login')
     },
 
-    loadPosts: function () {
+    loadPost: function (id) {
       console.log(localStorage.getItem('token'))
-      axios.get('http://localhost:3000/api/posts', { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      axios.get('http://localhost:3000/api/posts/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
-        //console.log(response)
-        this.posts = response.data
-        console.log(this.posts)
+        console.log(response)
+        this.post = response.data
+        console.log(this.post)
       }) 
+    },
+
+    deletePost: function (id) {
+      axios.delete('http://localhost:3000/api/posts/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      .then((response) => {
+        window.location = "http://localhost:8080/"
+      })
     },
 
     likePost: function (id) {
@@ -123,14 +97,32 @@ export default {
       axios.post('http://localhost:3000/api/comments/', this.comment, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
         console.log(response)
+        this.loadComments( this.$route.params.id )
+      }) 
+    },
+
+    loadComments: function(id) {
+      axios.get('http://localhost:3000/api/comments/', { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      .then((response) => {
+        this.comments = response.data;
+        let arr = [];
+        this.comments.forEach( (item)=> {
+          if(item.postId == id) {
+            arr.push(item)
+          }
+        })
+        this.comments = arr;
+        console.log(id)
+        console.log(this.comments)
       }) 
     }
 
+
+
   },
   mounted: function () {
-    this.loadPosts()
-    let userId = localStorage.getItem('userId');
-    this.retrieveUser(userId)
+    this.loadPost( this.$route.params.id ),
+    this.loadComments( this.$route.params.id )
   }
 
 }
@@ -249,12 +241,8 @@ body {
   margin-left: 5px;
 }
 
-.feedback .dislike {
-  margin-right: 5px;
-}
-
-.feedback .read {
-  margin-left: 5px;
-  margin-right: 5px;
+.commentStyle {
+  background-color: rgb(235, 235, 235);
+  padding: 3px;
 }
 </style>
