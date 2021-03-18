@@ -13,22 +13,22 @@
   </div>
 
   <div class="create-post">
-     <form>
+     <form @submit.prevent="handleSubmit">
   <div class="container">
     <h2>Edit Post</h2>
     <hr>
 
     <label for="title"><b>Title:</b></label>
-    <input type="text" placeholder="Enter Title" name="title" id="title" required>
+    <input type="text" v-model="form.title" name="title" id="title" required>
 
     <label for="psw"><b>Description:</b></label>
-    <input type="text" placeholder="Enter Description" name="psw" id="psw" required>
+    <input type="text" v-model="form.description" name="psw" id="psw" required>
     
     
 <label for="file-upload"><b>Choose a file:</b></label>
 <label class="file">
   <input type="file" id="file" aria-label="File browser example">
-  <span class="file-custom"></span>
+  <span class="file-custom">{{ form.imageUrl }}</span>
 </label>
 
 
@@ -38,6 +38,71 @@
 </form> 
   </div>
 </template>
+
+<script>
+import axios from 'axios'
+
+export default {
+  name: 'EditPost',
+  data() {
+    return {
+      post: {},
+      form: {
+        like: 0,
+        title: '',
+        description: '',
+        imageUrl: '',
+        userId: localStorage.getItem('userId')
+      },
+      comment: {
+        comment: '',
+        user: JSON.parse(localStorage.getItem('user')),
+        postId: ''
+      },
+      comments: {}
+    }
+  },
+  methods: {
+    submitLogout: function() {
+      localStorage.removeItem('token')
+      this.$router.push('http://localhost:3000/api/login')
+    },
+
+    loadPost: function (id) {
+      console.log(localStorage.getItem('token'))
+      axios.get('http://localhost:3000/api/posts/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      .then((response) => {
+        console.log(response)
+        this.post = response.data
+        this.form.title = this.post.title;
+        this.form.description = this.post.description;
+        this.form.imageUrl = this.post.imageUrl;
+        console.log(this.post)
+      }) 
+    },
+    
+    handleSubmit: function () {
+      console.log(localStorage.getItem('token'))
+      const form = new FormData()
+      form.append('title', this.title)
+      form.append('description', this.description)
+      form.append('image', this.imageUrl)
+      form.append('userId', this.userId)
+      axios.put('http://localhost:3000/api/posts/' + this.$route.params.id, this.form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      .then((response) => {
+        console.log(response)
+        if (response.status == 201) {
+        window.location = "http://localhost:8080/"
+      }
+      }) 
+    }
+  },
+  mounted: function () {
+    this.loadPost( this.$route.params.id )
+  }
+
+}
+</script>
 
 <style scoped>
 * {

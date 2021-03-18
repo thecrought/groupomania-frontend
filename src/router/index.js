@@ -34,7 +34,7 @@ const routes = [
     component: NewFeeds
   },
   {
-    path: '/editpost',
+    path: '/editpost/:id',
     name: 'EditPost',
     component: EditPost
   },

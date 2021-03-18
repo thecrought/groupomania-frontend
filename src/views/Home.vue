@@ -19,15 +19,15 @@
     <div class="message-header"></div>
       <div class="message-author-picture"></div>
       <div class="message-author">{{ user.firstName + user.lastName }}</div>
-      <div class="message-time">3 minutes ago</div>
+      <div class="message-time">3 minutes</div>
       <div class="message-title"><b>{{ post.title }}</b></div>
        <p>{{ post.description }}</p>
        <div class="message-image"><img :src="post.imageUrl"></div>
        <hr>
       <div class="feedback">
-        <button class="like" @click="userLike( post._id, post.likes )">Like [{{ post.likes }}]</button>
-        <button class="dislike" @click="userDislike( post._id )">Dislike [{{ post.dislikes }}]</button>
-        <button class="read" @click="readRedirect( post._id )">Read</button>
+        <button class="like" @click="userLike( post._id, post.likes, post )">Like <span v-if="post.likes != 0">{{ post.likes }}</span></button>
+        <button class="dislike" @click="userDislike( post._id, post.dislikes )">Dislike <span v-if="post.dislikes != 0"> {{ post.dislikes }}</span></button>
+        <button class="read" @click="readRedirect( post._id, post )">Read {{ post.userRead.length }}</button>
         
         
       </div>
@@ -47,6 +47,7 @@ export default {
       user: {},
       form: {
         like: 0,
+        dislike: 0,
         userId: localStorage.getItem('userId')
       },
       comment: {
@@ -57,12 +58,17 @@ export default {
     }
   },
   methods: {
-    userLike: function(id, like) {
+    userLike: function(id, like, post) {
       if (like == null || like == 0) {
           this.form.like = 1
           } else {
+            if (post.usersLiked.includes(this.form.userId)) {
               this.form.like = 0
-          }
+            } else {
+              this.form.like = 1
+            }
+          } 
+
       axios.post('http://localhost:3000/api/posts/' + id + '/like', this.form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
         console.log(response)
@@ -70,10 +76,16 @@ export default {
       }) 
     },
 
-    userDislike: function(id) {
-      axios.post('http://localhost:3000/api/posts/' + id + '/dislike', { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+    userDislike: function(id, dislike) {
+      if (dislike == null || dislike == 0) {
+          this.form.dislike = 1
+          } else {
+              this.form.dislike = 0
+          }
+      axios.post('http://localhost:3000/api/posts/' + id + '/dislike', this.form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
         console.log(response)
+        this.loadPosts();
       }) 
     },
 
@@ -95,7 +107,13 @@ export default {
       }) 
     },
 
-    readRedirect: function(id) {
+    readRedirect: function(id, post) {
+      if (!post.userRead.includes(this.user.userId)) {
+        axios.post('http://localhost:3000/api/posts/' + id + '/read', this.form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      .then((response) => {
+        console.log(response)
+      }) 
+      }
       window.location.href = '/singlepost/' + id
     },
 
@@ -112,10 +130,6 @@ export default {
         this.posts = response.data
         console.log(this.posts)
       }) 
-    },
-
-    likePost: function (id) {
-      alert(id)
     },
 
     makeComment: function(id) {

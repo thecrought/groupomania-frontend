@@ -24,9 +24,9 @@
        <div class="message-image"><img :src="post.imageUrl"></div>
        <hr>
       <div class="feedback">
-        <button class="like" @click="likePost( post._id )">Like</button>
-        <button class="comment">Comment</button>
-        <button class="edit">Edit</button>
+        <button class="like">Like</button>
+        <button class="dislike">Dislike</button>
+        <button class="edit" @click="editPost( post._id, post )">Edit</button>
         <button @click="deletePost( post._id )" class="delete">Delete</button>
       </div>
     </div>
@@ -57,13 +57,8 @@ export default {
     }
   },
   methods: {
-    readRedirect: function(id) {
-      axios.get('http://localhost:3000/api/posts/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
-      .then((response) => {
-        //console.log(response)
-        this.posts = response.data
-        console.log(this.posts)
-      })
+    editPost: function(id, post) {
+      window.location.href = '/editpost/' + id
     },
 
     submitLogout: function() {
@@ -86,10 +81,6 @@ export default {
       .then((response) => {
         window.location = "http://localhost:8080/"
       })
-    },
-
-    likePost: function (id) {
-      alert(id)
     },
 
     makeComment: function(id) {

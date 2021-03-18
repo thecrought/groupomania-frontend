@@ -73,18 +73,15 @@ exports.createPost = (req, res, next) => {
         const url = req.protocol + '://' + req.get('host');
         post = {
           _id: req.params.id,
-          title: req.body.post.title,
-          description: req.body.post.description,
+          title: req.body.title,
+          description: req.body.description,
           imageUrl: url + '/images/' + req.file.filename,
-          userId: req.body.post.userId
         };
     } else {
         post = {
             _id: req.params.id,
             title: req.body.title,
             description: req.body.description,
-            imageUrl: req.body.imageUrl,
-            userId: req.body.userId
           };
     }
 
@@ -116,13 +113,7 @@ exports.createPost = (req, res, next) => {
             } else if (req.body.like == 0 && post.usersLiked.includes(req.body.userId)) {
                 post.usersLiked.remove(req.body.userId)
                 post.likes -= 1
-            } else if (req.body.like == -1) {
-                //post.usersDisliked.push(req.body.userId) 
-                //post.dislikes += 1
-            } else if (req.body.like == 0 && post.usersDisliked.includes(req.body.userId)) {
-               // post.usersDisliked.remove(req.body.userId) 
-                //post.dislikes -= 1
-            }
+            } 
             post.save().then(
                 () => {
                     res.status(201).json({
@@ -138,6 +129,60 @@ exports.createPost = (req, res, next) => {
             );
         }
     );
+};
+
+exports.postDislike = (req, res, next) => {
+  Post.findOne({_id: req.params.id}).then(
+      (post) => {
+          if (req.body.dislike == 1) {
+              post.usersDisliked.push(req.body.userId)
+              if (post.dislikes == null) {
+                post.dislikes = 1
+              } else {
+                post.dislikes += 1
+              }
+          } else if (req.body.dislike == 0 && post.usersDisliked.includes(req.body.userId)) {
+              post.usersDisliked.remove(req.body.userId)
+              post.dislikes -= 1
+          }
+          post.save().then(
+              () => {
+                  res.status(201).json({
+                      message: 'Post saved successfully!'
+                  });
+              }
+          ).catch(
+              (error) => {
+                  res.status(400).json({
+                      error: error
+                  });
+              }
+          );
+      }
+  );
+};
+
+exports.postRead = (req, res, next) => {
+  Post.findOne({_id: req.params.id}).then(
+      (post) => {
+          if (!post.userRead.includes(req.body.userId)) {
+              post.userRead.push(req.body.userId)
+              post.save().then(
+                () => {
+                    res.status(201).json({
+                        message: 'Post saved successfully!'
+                    });
+                }
+            ).catch(
+                (error) => {
+                    res.status(400).json({
+                        error: error
+                    });
+                }
+            );
+          }
+      }
+  );
 };
 
   exports.deletePost = (req, res, next) => {
