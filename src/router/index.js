@@ -3,7 +3,7 @@ import Home from '../views/Home.vue'
 import Signup from '../views/Signup.vue'
 import Login from '../views/Login.vue'
 import CreatePost from '../views/CreatePost.vue'
-import NewFeeds from '../views/NewFeeds.vue'
+import Account from '../views/Account.vue'
 import EditPost from '../views/EditPost.vue'
 import SinglePost from '../views/SinglePost.vue'
 
@@ -29,9 +29,9 @@ const routes = [
     component: CreatePost
   },
   {
-    path: '/newfeeds',
-    name: 'NewFeeds',
-    component: NewFeeds
+    path: '/account',
+    name: 'Account',
+    component: Account
   },
   {
     path: '/editpost/:id',

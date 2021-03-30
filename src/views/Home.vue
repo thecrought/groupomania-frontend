@@ -1,33 +1,33 @@
 <template>
 <div id="nav">
     <router-link to="/">HOME</router-link>
-    <router-link to="/signup">SIGNUP</router-link>
-    <router-link to="/login">LOGIN</router-link>
+    <span v-if="userId != undefined"><router-link to="/signup">SIGNUP</router-link></span>
+    <span v-if="userId != undefined"><router-link to="/login">LOGIN</router-link></span>
     <router-link to="/createpost">CREATE POST</router-link>
-    <router-link to="/editpost">EDIT POST</router-link>
+    <router-link to="/account">ACCOUNT</router-link>
     <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
-    <button @click="deleteUser( form.userId )">delete user</button>
 </div>
 
  <div class="background-top">
      <h1>Groupomania</h1>
+     <h3>Hello back, {{ user.firstName + ' ' + user.lastName }}</h3> 
   </div>
 
 <div class="posts">
-    <h2>News Feed</h2> 
+    <h2>News Feed</h2>
 <div class="message" v-for="post in posts">
     <div class="message-header"></div>
       <div class="message-author-picture"></div>
-      <div class="message-author">{{ user.firstName + user.lastName }}</div>
-      <div class="message-time">3 minutes</div>
+      <div class="message-author">{{ retrieveUser(post.userId).firstName  + ' ' + retrieveUser(post.userId).lastName }}</div>
+      <div class="message-time">1 minutes</div>
       <div class="message-title"><b>{{ post.title }}</b></div>
        <p>{{ post.description }}</p>
        <div class="message-image"><img :src="post.imageUrl"></div>
        <hr>
       <div class="feedback">
-        <button class="like" @click="userLike( post._id, post.likes, post )">Like <span v-if="post.likes != 0">{{ post.likes }}</span></button>
-        <button class="dislike" @click="userDislike( post._id, post.dislikes )">Dislike <span v-if="post.dislikes != 0"> {{ post.dislikes }}</span></button>
-        <button class="read" @click="readRedirect( post._id, post )">Read {{ post.userRead.length }}</button>
+        <button class="like" @click="userLike( post.id, post.likes, post )"><i class="far fa-thumbs-up"></i> <span v-if="post.likes != 0">{{ post.likes }}</span></button>
+        <button class="dislike" @click="userDislike( post.id, post.dislikes, post )"><i class="far fa-thumbs-down"></i> <span v-if="post.dislikes != 0"> {{ post.dislikes }}</span></button>
+        <button class="read" @click="readRedirect( post.id, post )">Read <span v-if="JSON.parse(post.userRead).length != 0">{{ JSON.parse(post.userRead).length}}</span></button>
         
         
       </div>
@@ -57,18 +57,44 @@ export default {
       }
     }
   },
+
+  beforeMount() {
+      if (!localStorage.getItem('userId')) {
+        window.location.href = '/login'
+      }
+    this.loadPosts()
+    let userId = localStorage.getItem('userId');
+    console.log('It working')
+    console.log(userId)
+    this.user = JSON.parse(localStorage.getItem('user'))
+    console.log(this.user)
+    this.posts.map(  (post)=> {
+      post.user = this.retrieveUser(post.userId)
+    })
+    console.log(this.posts)
+    },
+
+  mounted() {
+    
+  },
+
   methods: {
     userLike: function(id, like, post) {
       if (like == null || like == 0) {
           this.form.like = 1
+          //post.usersLiked = JSON.stringify(post.usersLiked)
+          //post.usersLiked = JSON.parse(post.usersLiked)
           } else {
+            post.usersLiked = JSON.stringify(post.usersLiked)
+            post.usersLiked = JSON.parse(post.usersLiked)
             if (post.usersLiked.includes(this.form.userId)) {
               this.form.like = 0
             } else {
               this.form.like = 1
             }
           } 
-
+      
+      //console.log(this.form.userId)
       axios.post('http://localhost:3000/api/posts/' + id + '/like', this.form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
         console.log(response)
@@ -76,12 +102,18 @@ export default {
       }) 
     },
 
-    userDislike: function(id, dislike) {
+    userDislike: function(id, dislike, post) {
       if (dislike == null || dislike == 0) {
           this.form.dislike = 1
           } else {
+            post.usersDisliked = JSON.stringify(post.usersDisliked)
+            post.usersDisliked = JSON.parse(post.usersDisliked)
+            if (post.usersDisliked.includes(this.form.userId)) {
               this.form.dislike = 0
-          }
+            } else {
+              this.form.dislike = 1
+            }
+          } 
       axios.post('http://localhost:3000/api/posts/' + id + '/dislike', this.form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
         console.log(response)
@@ -89,12 +121,15 @@ export default {
       }) 
     },
 
-    retrieveUser: function(id) {
-      axios.get('http://localhost:3000/api/user/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+    retrieveUser: async function(id) {
+      await axios.get('http://localhost:3000/api/user/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
-        console.log(response)
-        this.user = response.data
-        console.log(this.user)
+        //console.log(response)
+        //this.user = response.data
+        //console.log(this.user)
+        //console.log(this.form.userId);
+        console.log(response.data)
+        return response.data
       }) 
     },
 
@@ -108,6 +143,7 @@ export default {
     },
 
     readRedirect: function(id, post) {
+      post.userRead = JSON.parse(post.userRead);
       if (!post.userRead.includes(this.user.userId)) {
         axios.post('http://localhost:3000/api/posts/' + id + '/read', this.form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
@@ -118,7 +154,7 @@ export default {
     },
 
     submitLogout: function() {
-      localStorage.removeItem('token')
+      localStorage.clear()
       this.$router.push('http://localhost:3000/api/login')
     },
 
@@ -134,19 +170,13 @@ export default {
 
     makeComment: function(id) {
       this.comment.postId = id;
-      axios.post('http://localhost:3000/api/comments/', this.comment, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      axios.post('http://localhost:4000/api/comments/', this.comment, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
         console.log(response)
       }) 
     }
 
-  },
-  mounted: function () {
-    this.loadPosts()
-    let userId = localStorage.getItem('userId');
-    this.retrieveUser(userId)
   }
-
 }
 </script>
 
@@ -164,6 +194,8 @@ body {
 
 .background-top {
   background-color: #232f3e;
+  width: 100%;
+  display: block;
   height: 300px;
 }
 
@@ -180,15 +212,19 @@ body {
   padding-top: 70px;
 }
 
+h3 {
+  text-align: center;
+  padding-top: 10px;
+  font-size: 17px;
+  color: white;
+}
+
 .posts {
   background-color: white;
   width: 800px;
-  height: 300px;
-  border: 1px solid  #e2e0e0;
+  height: 100px;
   border-radius: 7px;
-  position: absolute;
-  top: 30%;
-  left: 23%;
+  margin: -100px auto;
 }
 
 .posts h2 {
@@ -252,6 +288,7 @@ body {
 }
 
 .feedback .like {
+  width: 40px;
   margin-right: 5px;
 }
 
@@ -264,11 +301,18 @@ body {
 }
 
 .feedback .dislike {
+  width: 40px;
   margin-right: 5px;
 }
 
 .feedback .read {
   margin-left: 5px;
   margin-right: 5px;
+}
+
+@media only screen and (max-width: 1000px) {
+  .background-top {
+    width: 1024px;
+  }
 }
 </style>

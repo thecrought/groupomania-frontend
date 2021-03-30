@@ -4,7 +4,7 @@
     <router-link to="/signup">SIGNUP</router-link>
     <router-link to="/login">LOGIN</router-link>
     <router-link to="/createpost">CREATE POST</router-link>
-    <router-link to="/editpost">EDIT POST</router-link>
+    <router-link to="/account">ACCOUNT</router-link>
     <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
 </div>
 
@@ -22,7 +22,7 @@
     <input type="text" placeholder="Enter Title" v-model="title" name="title" id="title" required>
 
     <label for="psw"><b>Description:</b></label>
-    <input type="text" placeholder="Enter Description" v-model="description" name="psw" id="psw" required>
+    <textarea placeholder="Enter Description" v-model="description" name="psw" id="psw" required></textarea>
     
     
 <label for="file-upload"><b>Choose a file:</b></label>

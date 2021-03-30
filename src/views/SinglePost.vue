@@ -4,7 +4,7 @@
     <router-link to="/signup">SIGNUP</router-link>
     <router-link to="/login">LOGIN</router-link>
     <router-link to="/createpost">CREATE POST</router-link>
-    <router-link to="/editpost">EDIT POST</router-link>
+    <router-link to="/account">ACCOUNT</router-link>
     <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
 </div>
 
@@ -18,21 +18,19 @@
     <div class="message-header"></div>
       <div class="message-author-picture"></div>
       <div class="message-author">{{ post.firstName + post.lastName }}</div>
-      <div class="message-time">3 minutes ago</div>
+      <div class="message-time">1 minutes ago</div>
       <div class="message-title"><b>{{ post.title }}</b></div>
        <p>{{ post.description }}</p>
        <div class="message-image"><img :src="post.imageUrl"></div>
        <hr>
       <div class="feedback">
-        <button class="like">Like</button>
-        <button class="dislike">Dislike</button>
-        <button class="edit" @click="editPost( post._id, post )">Edit</button>
-        <button @click="deletePost( post._id )" class="delete">Delete</button>
+        <button class="edit" @click="editPost( post.id, post )" v-if="form.userId == post.userId">Edit</button>
+        <button @click="deletePost( post.id )" class="delete" v-if="form.userId == post.userId">Delete</button>
       </div>
     </div>
-    <input type="comment" v-model="comment.comment" placeholder="Write a comment" name="comment" id="comment">
-        <button class="comment" @click="makeComment( post._id )">Send</button>
-      <p class="commentStyle" v-for="comment in comments" :key="comment._id"> {{ comment.comment }} by {{ comment.user.lastName }}</p>
+    <input type="text" v-model="comment.comment" placeholder="Write a comment" name="comment" id="comment">
+        <button class="comment" @click="makeComment( post.id )">Send</button>
+      <p class="commentStyle" v-for="comment in comments" :key="comment._id"> {{ comment.comment }} by {{ JSON.parse(comment.user).lastName}}</p>
 </div>
 </template>
 
@@ -152,8 +150,7 @@ body {
 .posts {
   background-color: white;
   width: 800px;
-  height: 300px;
-  border: 1px solid  #e2e0e0;
+  height: 100px;
   border-radius: 7px;
   position: absolute;
   top: 30%;
@@ -236,4 +233,15 @@ body {
   background-color: rgb(235, 235, 235);
   padding: 3px;
 }
+
+input {
+  width: 764px;
+  height: 50px;
+
+}
+
+.comment {
+  height: 50px;
+}
+
 </style>

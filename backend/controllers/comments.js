@@ -5,7 +5,7 @@ exports.createComment = (req, res, next) => {
         comment = new Comment ({
           postId: req.body.postId,
           comment: req.body.comment,
-          user: req.body.user
+          user: JSON.stringify(req.body.user)
         });
         comment.save().then(
           () => {
@@ -24,7 +24,7 @@ exports.createComment = (req, res, next) => {
   };
 
 exports.getComments = (req, res, next) => {
-    Comment.find({ }).sort( { _id : -1} ).then(
+    Comment.findAll({order:[["createdAt","DESC"] ]}).then(
         (comments) => {
           res.status(200).json(comments);
         }

@@ -4,7 +4,7 @@
     <router-link to="/signup">SIGNUP</router-link>
     <router-link to="/login">LOGIN</router-link>
     <router-link to="/createpost">CREATE POST</router-link>
-    <router-link to="/editpost">EDIT POST</router-link>
+    <router-link to="/account">ACCOUNT</router-link>
     <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
 </div>
 
@@ -64,6 +64,7 @@ export default {
         console.log(response)
         if (response.status == 201) {
         alert('Your account has been activated successfully. You can now login.');
+        window.location.href = '/login'
       }
       }) 
     }
