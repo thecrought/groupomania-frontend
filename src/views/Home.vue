@@ -15,10 +15,10 @@
 
 <div class="posts">
     <h2>News Feed</h2>
-<div class="message" v-for="post in posts">
+<div class="message" v-for="post in posts" :key="post.id">
     <div class="message-header"></div>
       <div class="message-author-picture"></div>
-      <div class="message-author">{{ retrieveUser(post.userId).firstName  + ' ' + retrieveUser(post.userId).lastName }}</div>
+      <div class="message-author">{{ JSON.parse(post.userId).firstName  + ' ' + JSON.parse(post.userId).lastName }}</div>
       <div class="message-time">1 minutes</div>
       <div class="message-title"><b>{{ post.title }}</b></div>
        <p>{{ post.description }}</p>
@@ -164,7 +164,7 @@ export default {
       .then((response) => {
         //console.log(response)
         this.posts = response.data
-        console.log(this.posts)
+        //console.log(this.posts)
       }) 
     },
 

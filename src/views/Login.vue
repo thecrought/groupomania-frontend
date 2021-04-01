@@ -1,11 +1,7 @@
 <template>
 <div id="nav">
-    <router-link to="/" v-if="$route == 'Login'">HOME</router-link>
     <router-link to="/signup">SIGNUP</router-link>
-    <router-link to="/login">LOGIN {$route}</router-link>
-    <router-link to="/createpost" v-if="$route == 'CreatePost'">CREATE POST</router-link>
-    <router-link to="/account" v-if="$route == 'Account'">ACCOUNT</router-link>
-    <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
+    <router-link to="/login">LOGIN</router-link>
 </div>
 
   <div class="background-top">

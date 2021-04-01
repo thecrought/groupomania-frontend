@@ -1,8 +1,6 @@
 <template>
 <div id="nav">
     <router-link to="/">HOME</router-link>
-    <router-link to="/signup">SIGNUP</router-link>
-    <router-link to="/login">LOGIN</router-link>
     <router-link to="/createpost">CREATE POST</router-link>
     <router-link to="/account">ACCOUNT</router-link>
     <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
@@ -57,6 +55,8 @@ export default {
         console.log(response)
         this.user = response.data
         console.log(this.user)
+        localStorage.clear()
+        this.$router.push('http://localhost:3000/api/login')
       }) 
     },
 

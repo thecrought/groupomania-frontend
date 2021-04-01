@@ -17,15 +17,15 @@
 <div class="message">
     <div class="message-header"></div>
       <div class="message-author-picture"></div>
-      <div class="message-author">{{ post.firstName + post.lastName }}</div>
+       <div class="message-author">{{ firstName + ' ' + lastName }}</div>
       <div class="message-time">1 minutes ago</div>
-      <div class="message-title"><b>{{ post.title }}</b></div>
+      <div class="message-title"><b>{{ post.title }}</b></div><br>
        <p>{{ post.description }}</p>
        <div class="message-image"><img :src="post.imageUrl"></div>
        <hr>
       <div class="feedback">
-        <button class="edit" @click="editPost( post.id, post )" v-if="form.userId == post.userId">Edit</button>
-        <button @click="deletePost( post.id )" class="delete" v-if="form.userId == post.userId">Delete</button>
+        <button class="edit" @click="editPost( post.id, post )" v-if="form.userId == form.userId">Edit</button>
+        <button @click="deletePost( post.id )" class="delete" v-if="form.userId == form.userId">Delete</button>
       </div>
     </div>
     <input type="text" v-model="comment.comment" placeholder="Write a comment" name="comment" id="comment">
@@ -42,6 +42,8 @@ export default {
   data() {
     return { 
       post: {},
+      firstName: '',
+      lastName: '',
       form: {
         like: 0,
         userId: localStorage.getItem('userId')
@@ -112,6 +114,8 @@ export default {
   mounted: function () {
     this.loadPost( this.$route.params.id ),
     this.loadComments( this.$route.params.id )
+    //this.firstName = JSON.parse(JSON.stringify(this.post.userId)).firstName
+    //this.lasttName = JSON.parse(this.post.userId).lastName
   }
 
 }
@@ -198,7 +202,7 @@ body {
   }
 
 .message-title {
-  padding-top: 15px;
+  padding-top: 30px;
   padding-bottom: 8px;
   color: #2e2e2e;
 }

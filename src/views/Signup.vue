@@ -1,11 +1,7 @@
 <template>
 <div id="nav">
-    <router-link to="/">HOME</router-link>
     <router-link to="/signup">SIGNUP</router-link>
     <router-link to="/login">LOGIN</router-link>
-    <router-link to="/createpost">CREATE POST</router-link>
-    <router-link to="/account">ACCOUNT</router-link>
-    <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
 </div>
 
   <div class="background-top">

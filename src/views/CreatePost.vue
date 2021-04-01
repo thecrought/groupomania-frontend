@@ -1,8 +1,6 @@
 <template>
 <div id="nav">
     <router-link to="/">HOME</router-link>
-    <router-link to="/signup">SIGNUP</router-link>
-    <router-link to="/login">LOGIN</router-link>
     <router-link to="/createpost">CREATE POST</router-link>
     <router-link to="/account">ACCOUNT</router-link>
     <a href="javascript:void(0)" @click="submitLogout">LOGOUT</a>
@@ -22,7 +20,7 @@
     <input type="text" placeholder="Enter Title" v-model="title" name="title" id="title" required>
 
     <label for="psw"><b>Description:</b></label>
-    <textarea placeholder="Enter Description" v-model="description" name="psw" id="psw" required></textarea>
+    <input type="text" placeholder="Enter Description" v-model="description" name="psw" id="psw" required>
     
     
 <label for="file-upload"><b>Choose a file:</b></label>
@@ -47,13 +45,34 @@ export default {
   name: 'Signup',
   data() {
     return {
+      user: {},
       title: '',
       description: '',
       imageUrl: '',
       userId: localStorage.getItem('userId')
     }
   },
+
+  beforeMount() {
+      if (!localStorage.getItem('userId')) {
+        window.location.href = '/login'
+      }
+      this.retrieveUser(localStorage.getItem('userId'))
+  },
+
   methods: {
+    retrieveUser: async function(id) {
+      await axios.get('http://localhost:3000/api/user/' + id, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
+      .then((response) => {
+        //console.log(response)
+        this.user = response.data
+        //console.log(this.user)
+        //console.log(this.form.userId);
+        //console.log(response.data)
+        //return response.data
+      }) 
+    },
+
     onFileSelected: function (event) {
       this.imageUrl = event.target.files[0];
       console.log(this.imageUrl)
@@ -64,7 +83,7 @@ export default {
       form.append('title', this.title)
       form.append('description', this.description)
       form.append('image', this.imageUrl)
-      form.append('userId', this.userId)
+      form.append('userId', JSON.stringify(this.user))
       axios.post('http://localhost:3000/api/posts', form, { headers: {authorization: 'Bearer ' + localStorage.getItem('token')}})
       .then((response) => {
         console.log(response)
